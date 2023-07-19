@@ -8,7 +8,7 @@ import Photos
 
 public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelegate {
     var flutterResult: FlutterResult!
-    
+     var aassetTobedeleted: PHAsset?
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "lecle_social_share", binaryMessenger: registrar.messenger())
         let instance = SwiftLecleSocialSharePlugin()
@@ -131,7 +131,7 @@ public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelega
             createAssetURL(url: fileURL, result: result, fileType: PHAssetMediaType.video) { asset in
                 DispatchQueue.main.async {
                     self.videoAssetToDelete = asset
-                    
+                    self.aassetTobedeleted = asset
                     if let previewPath = previewImagePath {
                         let previewURL = URL(fileURLWithPath: previewPath)
                         self.createAssetURL(url: previewURL, result: result, fileType: PHAssetMediaType.image) {
@@ -208,6 +208,7 @@ public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelega
             createAssetURL(url: fileURL, result: result, fileType: PHAssetMediaType.image) { asset in
                 DispatchQueue.main.async {
                     self.photoAssetToDelete = asset
+                    self.aassetTobedeleted  = asset
                     let photo = SharePhoto(image: self.getUIImage(asset: asset), isUserGenerated: true)
                     content.photos = [photo]
                     content.ref = ref
@@ -626,6 +627,7 @@ public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelega
             createAssetURL(url: fileURL, result: result, fileType: type) { asset in
                 DispatchQueue.main.async {
                     self.instaAssetToDelete = asset
+                    self.aassetTobedeleted = asset
                     let localIdentifier = asset.localIdentifier
                     let u = "instagram://library?LocalIdentifier=" + localIdentifier
                     
@@ -1252,6 +1254,7 @@ public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelega
     // }
     
     func createAssetURL(url: URL, result: @escaping FlutterResult, fileType: PHAssetMediaType, completion: @escaping (PHAsset) -> Void) {
+         var placeholder: PHObjectPlaceholder?
         switch fileType {
         case PHAssetMediaType.image:
             PHPhotoLibrary.shared().performChanges({
@@ -1274,28 +1277,25 @@ public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelega
             }
             break
         case PHAssetMediaType.video:
-            PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
-            }) { saved, error in
-                if saved {
-                    let fetchOptions = PHFetchOptions()
-                    fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-                    fetchOptions.predicate = NSPredicate(format: "mediaType == %d || mediaType == %d",
-                                                         PHAssetMediaType.video.rawValue,
-                                                         PHAssetMediaType.image.rawValue)
-                    
-                    guard let fetchResult = PHAsset.fetchAssets(with: fetchOptions).firstObject else {
-                        return
-                    }
-                    completion(fetchResult)
+        
+        PHPhotoLibrary.shared().performChanges({
+            let request = PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
+            placeholder = request?.placeholderForCreatedAsset
+        }) { saved, error in
+            if saved, let placeholder = placeholder {
+                let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [placeholder.localIdentifier], options: nil)
+                if let asset = fetchResult.firstObject {
+                    completion(asset)
                 } else {
                     result(false)
                 }
+            } else {
+                result(false)
             }
-            break
-        default:
-            return
         }
+    default:
+        return
+    }
     }
     
     func getUIImage(asset: PHAsset) -> UIImage {
@@ -1329,11 +1329,11 @@ public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelega
     }
     
     private func deleteCurrentAsset() {
-        //        guard let currentAsset = assetToDelete else{
-        //            return
-        //        }
-        //        PHPhotoLibrary.shared().performChanges({
-        //            PHAssetChangeRequest.deleteAssets([currentAsset] as NSArray)
-        //        })
+               guard let currentAsset = aassetTobedeleted else{
+                   return
+               }
+               PHPhotoLibrary.shared().performChanges({
+                   PHAssetChangeRequest.deleteAssets([currentAsset] as NSArray)
+               })
     }
 }
