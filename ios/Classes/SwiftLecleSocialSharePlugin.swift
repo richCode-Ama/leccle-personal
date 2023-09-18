@@ -4,7 +4,7 @@ import FBSDKCoreKit
 import FBSDKShareKit
 import Photos
 // import TwitterKit
-// import TikTokOpenSDK
+import TikTokOpenSDK
 
 public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelegate {
     var flutterResult: FlutterResult!
@@ -80,9 +80,9 @@ public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelega
         case "shareFileWhatsApp":
             shareFileToWhatsApp(result: result, arguments: args)
             break
-        // case "shareFilesTikTok":
-        //     shareFilesToTikTok(result: result, arguments: args)
-        //     break
+         case "shareFilesTikTok":
+             shareFilesToTikTok(result: result, arguments: args)
+             break
         // case "openTikTokUserPage":
         //     openTikTokUserPage(result: result, arguments: args)
         //     break
@@ -1130,96 +1130,95 @@ public class SwiftLecleSocialSharePlugin: NSObject, FlutterPlugin, SharingDelega
     }
     
     
-    // func shareFilesToTikTok(result: @escaping FlutterResult, arguments: [String : Any?]) {
-    //     let fileUrls = arguments["fileUrls"] as? [String?]
-    //     let fileType = arguments["fileType"] as! String
-    //     let shareFormat = arguments["shareFormat"] as! String
-    //     let landedPageType = arguments["landedPageType"] as! String
-    //     let hashtag = arguments["hashtag"] as? [String]
+       func shareFilesToTikTok(result: @escaping FlutterResult, arguments: [String : Any?]) {
+        let fileUrls = arguments["fileUrls"] as? [String?]
+        let fileType = arguments["fileType"] as! String
+        let shareFormat = arguments["shareFormat"] as! String
+        let landedPageType = arguments["landedPageType"] as! String
+        let hashtag = arguments["hashtag"] as? [String]
         
-    //     // https://www.tiktok.com/en/
-    //     // snssdk1180://
-    //     // musically://
-    //     guard let tikTokURL = URL(string: "snssdk1233://") else {
-    //         result(false)
-    //         return
-    //     }
+        // https://www.tiktok.com/en/
+        // snssdk1180://
+        // musically://
+        guard let tikTokURL = URL(string: "snssdk1233://") else {
+            result(false)
+            return
+        }
         
-    //     guard let urls = fileUrls else {
-    //         flutterResult(false)
-    //         return
-    //     }
+        guard let urls = fileUrls else {
+            flutterResult(false)
+            return
+        }
         
-    //     if (UIApplication.shared.canOpenURL(tikTokURL)) {
-    //         let request = TikTokOpenSDKShareRequest()
-    //         var shareFiles = [String]()
-    //         var type: PHAssetMediaType!
-    //         var mediaType: TikTokOpenSDKShareMediaType!
-    //         var format: TikTokOpenSDKShareFormatType!
-    //         var pageType: TikTokOpenSDKLandedPageType!
+        if (UIApplication.shared.canOpenURL(tikTokURL)) {
+            let request = TikTokOpenSDKShareRequest()
+            var shareFiles = [String]()
+            var type: PHAssetMediaType!
+            var mediaType: TikTokOpenSDKShareMediaType!
+            var format: TikTokOpenSDKShareFormatType!
+            var pageType: TikTokOpenSDKLandedPageType!
             
-    //         if (fileType == "image") {
-    //             type = PHAssetMediaType.image
-    //             mediaType = TikTokOpenSDKShareMediaType.image
-    //         } else {
-    //             type = PHAssetMediaType.video
-    //             mediaType = TikTokOpenSDKShareMediaType.video
-    //         }
+            if (fileType == "image") {
+                type = PHAssetMediaType.image
+                mediaType = TikTokOpenSDKShareMediaType.image
+            } else {
+                type = PHAssetMediaType.video
+                mediaType = TikTokOpenSDKShareMediaType.video
+            }
             
-    //         if (shareFormat == "normal") {
-    //             format = TikTokOpenSDKShareFormatType.normal
-    //         } else {
-    //             format = TikTokOpenSDKShareFormatType.greenScreen
-    //         }
+            if (shareFormat == "normal") {
+                format = TikTokOpenSDKShareFormatType.normal
+            } else {
+                format = TikTokOpenSDKShareFormatType.greenScreen
+            }
             
-    //         if (landedPageType == "clip") {
-    //             pageType = TikTokOpenSDKLandedPageType.clip
-    //         } else if (landedPageType == "edit") {
-    //             pageType = TikTokOpenSDKLandedPageType.edit
-    //         } else {
-    //             pageType = TikTokOpenSDKLandedPageType.publish
-    //         }
+            if (landedPageType == "clip") {
+                pageType = TikTokOpenSDKLandedPageType.clip
+            } else if (landedPageType == "edit") {
+                pageType = TikTokOpenSDKLandedPageType.edit
+            } else {
+                pageType = TikTokOpenSDKLandedPageType.publish
+            }
             
-    //         for (i, url) in urls.enumerated() {
-    //             if let u = url {
-    //                 createAssetURL(url: URL(fileURLWithPath: u), result: result, fileType: type) {
-    //                     asset in DispatchQueue.main.async {
-    //                         shareFiles.append(asset.localIdentifier)
+            for (i, url) in urls.enumerated() {
+                if let u = url {
+                    createAssetURL(url: URL(fileURLWithPath: u), result: result, fileType: type) {
+                        asset in DispatchQueue.main.async {
+                            shareFiles.append(asset.localIdentifier)
                             
-    //                         if (i == urls.count - 1) {
-    //                             request.localIdentifiers = shareFiles
-    //                             request.mediaType = mediaType
-    //                             request.shareFormat = format
-    //                             request.landedPageType = pageType
-    //                             request.hashtag = hashtag?.joined(separator: ",") ?? ""
+                            if (i == urls.count - 1) {
+                                request.localIdentifiers = shareFiles
+                                request.mediaType = mediaType
+                                request.shareFormat = format
+                                request.landedPageType = pageType
+                                request.hashtag = hashtag?.joined(separator: ",") ?? ""
                                 
-    //                             request.send(completionBlock: { response in
-    //                                 if (response.isSucceed) {
-    //                                     result(true)
-    //                                     return
-    //                                 }
+                                request.send(completionBlock: { response in
+                                    if (response.isSucceed) {
+                                        result(true)
+                                        return
+                                    }
                                     
-    //                                 result(false)
-    //                             })
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         return
-    //     } else {
-    //         guard let tikTokStoreLink = URL(string: "itms-apps://itunes.apple.com/us/app/apple-store/id1235601864") else {
-    //             result(false)
-    //             return
-    //         }
-    //         UIApplication.shared.open(tikTokStoreLink, options: [:], completionHandler: { _Arg in
+                                    result(false)
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+            return
+        } else {
+            guard let tikTokStoreLink = URL(string: "itms-apps://itunes.apple.com/us/app/apple-store/id1235601864") else {
+                result(false)
+                return
+            }
+            UIApplication.shared.open(tikTokStoreLink, options: [:], completionHandler: { _Arg in
                 
-    //         })
+            })
             
-    //         result(false)
-    //     }
-    // }
-    
+            result(false)
+        }
+    }
     // func openTikTokUserPage(result: @escaping FlutterResult, arguments: [String : Any?]) {
     //     let username = arguments["username"] as! String
         
